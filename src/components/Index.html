@@ -1,0 +1,103 @@
+<!doctype html>
+
+<head>
+	<style>
+		div {
+			padding: 16px;
+			background-color: #179b77;
+		}
+	</style>
+
+	<script src="https://sdk.amazonaws.com/js/aws-sdk-2.357.0.min.js"></script>
+	<script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+	<script type="text/javascript">
+		//Bucket Configurations
+
+ var bucketName = 'vod-demo-source-12ruaxwvopm296';
+ var bucketRegion = 'us-west-2';
+ var IdentityPoolId = 'us-west-2:89f8b0d3-ae53-492a-9163-c7355a4f1152';
+
+ AWS.config.update({
+                region: bucketRegion,
+                credentials: new AWS.CognitoIdentityCredentials({
+                IdentityPoolId: IdentityPoolId
+                })
+            });
+
+            var s3 = new AWS.S3({
+                apiVersion: '2006-03-01',
+                params: {Bucket: bucketName}
+        });
+	</script>
+	<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+	<video id="video"></video>
+	<script>
+		var video = document.getElementById('video');
+  var videoSrc = 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8';
+  if (Hls.isSupported()) {
+    var hls = new Hls();
+    hls.loadSource(videoSrc);
+    hls.attachMedia(video);
+  }
+
+  else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    video.src = videoSrc;
+  }
+	</script>
+
+</head>
+
+<body>
+
+
+	<!-- A functional html code-->
+	<div>
+		<input type="file" id="fileUpload">
+    </div>
+
+		<div>
+			<button onclick="s3upload()">Share your video to Stream</button>
+		</div>
+
+		<progress max=”100” value=”0”></progress>
+
+		<script type="text/javascript">
+			function s3upload() {  
+                var files = document.getElementById('fileUpload').files;
+                if (files) 
+                {
+                    var file = files[0];
+                    var fileName = file.name;
+                    var filePath = 'vod-demo-source-12ruaxwvopm29' + fileName;
+                    var fileUrl = 'https://' + 'vod-demo-source-12ruaxwvopm29' + 's3-us-west-2' + '.amazonaws.com/' +  fileName;
+            
+                    s3.upload({
+                                    Key: fileName,
+                                    Body: file,
+                                    Bucket: 'vod-demo-source-12ruaxwvopm29',
+                                }, function(err, data) {
+                                    if(err) {
+                                        reject('error');
+                                    }
+                                    
+                                    alert('Successfully Uploaded!');
+                                }).on('httpUploadProgress', function (progress) {
+                                    var uploaded = parseInt((progress.loaded * 100) / progress.total);
+                                    $("progress").attr('value', uploaded);
+                                });
+                }
+      };
+		</script>
+
+		<video id="player"></video>
+
+		<div class="card" style="width: 40rem; margin:auto; margin-top:20px">
+			<div class="card-body">
+				<h4 class="card-title">Stream your On-Demand Video</h4>
+				<a href="#" id="button" class="btn btn-primary">Initializing</a>
+			</div>
+		</div>
+</body>
+
+</html>
